@@ -84,6 +84,7 @@ export function TransactionRow({
       <TableCell>
         <div className="flex justify-end gap-1">
           <TransactionFormDialog
+            key={`${transaction.id}:${transaction.updatedAt.toISOString()}`}
             accounts={accounts}
             categories={categories}
             transaction={transaction}

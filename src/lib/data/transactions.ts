@@ -144,3 +144,21 @@ export async function deleteTransaction(userId: string, transactionId: string) {
 export async function listAllTransactionsRaw(userId: string): Promise<Transaction[]> {
   return db.query.transactions.findMany({ where: eq(transactions.userId, userId) });
 }
+
+export async function bulkCreateTransactions(
+  userId: string,
+  inputs: CreateTransactionInput[],
+): Promise<Transaction[]> {
+  if (inputs.length === 0) return [];
+  return db
+    .insert(transactions)
+    .values(
+      inputs.map((input) => ({
+        userId,
+        ...input,
+        categoryId: input.type === "transfer" ? null : input.categoryId ?? null,
+        transferAccountId: input.type === "transfer" ? input.transferAccountId : null,
+      })),
+    )
+    .returning();
+}

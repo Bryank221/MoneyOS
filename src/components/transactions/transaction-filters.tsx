@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,6 +27,34 @@ export function TransactionFilters({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
+  // Captured once: an uncontrolled input's `defaultValue` must never change
+  // after mount (that's what triggers Base UI's warning), unlike the
+  // Selects below, which stay in sync with the URL as a controlled `value`.
+  const [initialSearch] = useState(() => searchParams.get("q") ?? "");
+
+  const typeItems = {
+    [ALL]: "All types",
+    income: "Income",
+    expense: "Expense",
+    transfer: "Transfer",
+  };
+  const accountItems = useMemo(
+    () => ({ [ALL]: "All accounts", ...Object.fromEntries(accounts.map((a) => [a.id, a.name])) }),
+    [accounts],
+  );
+  const categoryItems = useMemo(
+    () => ({
+      [ALL]: "All categories",
+      ...Object.fromEntries(categories.map((c) => [c.id, c.name])),
+    }),
+    [categories],
+  );
+  const sortItems = {
+    "date:desc": "Newest first",
+    "date:asc": "Oldest first",
+    "amount:desc": "Amount: high to low",
+    "amount:asc": "Amount: low to high",
+  };
 
   function setParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -47,13 +75,14 @@ export function TransactionFilters({
         <Input
           placeholder="Search merchant, description…"
           className="pl-8"
-          defaultValue={searchParams.get("q") ?? ""}
+          defaultValue={initialSearch}
           onChange={(e) => setParam("q", e.target.value)}
         />
       </div>
 
       <Select
-        defaultValue={searchParams.get("type") ?? ALL}
+        items={typeItems}
+        value={searchParams.get("type") ?? ALL}
         onValueChange={(v) => setParam("type", v)}
       >
         <SelectTrigger className="w-full sm:w-[150px]">
@@ -68,7 +97,8 @@ export function TransactionFilters({
       </Select>
 
       <Select
-        defaultValue={searchParams.get("accountId") ?? ALL}
+        items={accountItems}
+        value={searchParams.get("accountId") ?? ALL}
         onValueChange={(v) => setParam("accountId", v)}
       >
         <SelectTrigger className="w-full sm:w-[170px]">
@@ -85,7 +115,8 @@ export function TransactionFilters({
       </Select>
 
       <Select
-        defaultValue={searchParams.get("categoryId") ?? ALL}
+        items={categoryItems}
+        value={searchParams.get("categoryId") ?? ALL}
         onValueChange={(v) => setParam("categoryId", v)}
       >
         <SelectTrigger className="w-full sm:w-[170px]">
@@ -102,7 +133,8 @@ export function TransactionFilters({
       </Select>
 
       <Select
-        defaultValue={`${searchParams.get("sortBy") ?? "date"}:${searchParams.get("sortDir") ?? "desc"}`}
+        items={sortItems}
+        value={`${searchParams.get("sortBy") ?? "date"}:${searchParams.get("sortDir") ?? "desc"}`}
         onValueChange={(v) => {
           if (!v) return;
           const [sortBy, sortDir] = v.split(":");

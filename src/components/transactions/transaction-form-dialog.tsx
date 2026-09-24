@@ -76,6 +76,19 @@ export function TransactionFormDialog({
 
   const transferTargets = accounts.filter((a) => a.id !== accountId);
 
+  const accountItems = useMemo(
+    () => Object.fromEntries(accounts.map((a) => [a.id, a.name])),
+    [accounts],
+  );
+  const transferAccountItems = useMemo(
+    () => Object.fromEntries(transferTargets.map((a) => [a.id, a.name])),
+    [transferTargets],
+  );
+  const categoryItems = useMemo(
+    () => Object.fromEntries(filteredCategories.map((c) => [c.id, c.name])),
+    [filteredCategories],
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={trigger} />
@@ -121,7 +134,7 @@ export function TransactionFormDialog({
           <div className="space-y-2">
             <Label htmlFor="accountId">{type === "transfer" ? "From account" : "Account"}</Label>
             <input type="hidden" name="accountId" value={accountId} />
-            <Select value={accountId} onValueChange={(v) => setAccountId(v ?? "")}>
+            <Select items={accountItems} value={accountId} onValueChange={(v) => setAccountId(v ?? "")}>
               <SelectTrigger id="accountId" className="w-full">
                 <SelectValue placeholder="Choose an account" />
               </SelectTrigger>
@@ -139,7 +152,11 @@ export function TransactionFormDialog({
             <div className="space-y-2">
               <Label htmlFor="transferAccountId">To account</Label>
               <input type="hidden" name="transferAccountId" value={transferAccountId} />
-              <Select value={transferAccountId} onValueChange={(v) => setTransferAccountId(v ?? "")}>
+              <Select
+                items={transferAccountItems}
+                value={transferAccountId}
+                onValueChange={(v) => setTransferAccountId(v ?? "")}
+              >
                 <SelectTrigger id="transferAccountId" className="w-full">
                   <SelectValue placeholder="Choose a destination" />
                 </SelectTrigger>
@@ -156,7 +173,7 @@ export function TransactionFormDialog({
             <div className="space-y-2">
               <Label htmlFor="categoryId">Category</Label>
               <input type="hidden" name="categoryId" value={categoryId} />
-              <Select value={categoryId} onValueChange={(v) => setCategoryId(v ?? "")}>
+              <Select items={categoryItems} value={categoryId} onValueChange={(v) => setCategoryId(v ?? "")}>
                 <SelectTrigger id="categoryId" className="w-full">
                   <SelectValue placeholder="Choose a category" />
                 </SelectTrigger>

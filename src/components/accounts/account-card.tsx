@@ -1,13 +1,8 @@
-import { MoreVertical, Pencil } from "lucide-react";
+"use client";
+
+import { Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { AccountFormDialog } from "@/components/accounts/account-form-dialog";
 import { DeleteAccountButton } from "@/components/accounts/delete-account-button";
 import { ACCOUNT_TYPE_ICONS, ACCOUNT_TYPE_LABELS } from "@/lib/account-types";
@@ -33,26 +28,15 @@ export function AccountCard({ account }: { account: AccountWithBalance }) {
             </Badge>
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button variant="ghost" size="icon" className="size-8">
-                <MoreVertical className="size-4" />
-              </Button>
-            }
-          />
-          <DropdownMenuContent align="end">
-            <AccountFormDialog
-              account={account}
-              trigger={
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                  <Pencil className="size-4" />
-                  Edit
-                </DropdownMenuItem>
-              }
-            />
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <AccountFormDialog
+          key={`${account.id}:${account.updatedAt.toISOString()}`}
+          account={account}
+          trigger={
+            <button className="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground">
+              <Pencil className="size-4" />
+            </button>
+          }
+        />
       </CardHeader>
       <CardContent className="flex items-end justify-between">
         <p

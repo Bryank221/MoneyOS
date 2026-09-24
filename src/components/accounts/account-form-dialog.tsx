@@ -68,7 +68,11 @@ export function AccountFormDialog({ account, trigger }: AccountFormDialogProps) 
           <div className="space-y-2">
             <Label htmlFor="type">Type</Label>
             <input type="hidden" name="type" value={type} />
-            <Select value={type} onValueChange={(v) => setType(v as Account["type"])}>
+            <Select
+              items={ACCOUNT_TYPE_LABELS}
+              value={type}
+              onValueChange={(v) => setType(v as Account["type"])}
+            >
               <SelectTrigger id="type" className="w-full">
                 <SelectValue />
               </SelectTrigger>

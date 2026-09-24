@@ -1,4 +1,4 @@
-import { and, eq, isNull, or } from "drizzle-orm";
+import { and, eq, inArray, isNull, or } from "drizzle-orm";
 import { db } from "@/db";
 import { categories } from "@/db/schema";
 
@@ -10,6 +10,23 @@ export async function listCategories(userId: string): Promise<Category[]> {
     where: or(eq(categories.userId, userId), isNull(categories.userId)),
     orderBy: (c, { asc }) => [asc(c.kind), asc(c.name)],
   });
+}
+
+/** True only if every id is a default category or one owned by this user. */
+export async function categoryIdsAccessibleToUser(
+  userId: string,
+  categoryIds: string[],
+): Promise<boolean> {
+  const uniqueIds = Array.from(new Set(categoryIds));
+  if (uniqueIds.length === 0) return true;
+  const accessible = await db.query.categories.findMany({
+    where: and(
+      or(eq(categories.userId, userId), isNull(categories.userId)),
+      inArray(categories.id, uniqueIds),
+    ),
+    columns: { id: true },
+  });
+  return accessible.length === uniqueIds.length;
 }
 
 export interface CreateCategoryInput {

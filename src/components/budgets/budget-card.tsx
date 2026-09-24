@@ -28,6 +28,7 @@ export function BudgetCard({
         </div>
         <div className="flex shrink-0 gap-1">
           <BudgetFormDialog
+            key={`${budget.id}:${budget.updatedAt.toISOString()}`}
             categories={categories}
             month={month}
             budget={budget}

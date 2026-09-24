@@ -42,7 +42,11 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
       <form ref={formRef} action={formAction} className="flex flex-col gap-3 sm:flex-row">
         <input type="hidden" name="kind" value={kind} />
         <Input name="name" placeholder="Category name" required className="flex-1" />
-        <Select value={kind} onValueChange={(v) => setKind(v as "expense" | "income")}>
+        <Select
+          items={{ expense: "Expense", income: "Income" }}
+          value={kind}
+          onValueChange={(v) => setKind(v as "expense" | "income")}
+        >
           <SelectTrigger className="w-full sm:w-[140px]">
             <SelectValue />
           </SelectTrigger>

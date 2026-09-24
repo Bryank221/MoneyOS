@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { useCloseOnSuccess } from "@/lib/use-close-on-success";
 import {
   Dialog,
@@ -44,6 +44,11 @@ export function BudgetFormDialog({ categories, month, budget, trigger }: BudgetF
 
   useCloseOnSuccess(state.success, setOpen);
 
+  const categoryItems = useMemo(
+    () => Object.fromEntries(categories.map((c) => [c.id, c.name])),
+    [categories],
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={trigger} />
@@ -57,7 +62,12 @@ export function BudgetFormDialog({ categories, month, budget, trigger }: BudgetF
           <div className="space-y-2">
             <Label htmlFor="categoryId">Category</Label>
             <input type="hidden" name="categoryId" value={categoryId} />
-            <Select value={categoryId} onValueChange={(v) => setCategoryId(v ?? "")} disabled={!!budget}>
+            <Select
+              items={categoryItems}
+              value={categoryId}
+              onValueChange={(v) => setCategoryId(v ?? "")}
+              disabled={!!budget}
+            >
               <SelectTrigger id="categoryId" className="w-full">
                 <SelectValue placeholder="Choose a category" />
               </SelectTrigger>

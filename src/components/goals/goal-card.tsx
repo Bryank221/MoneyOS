@@ -25,6 +25,7 @@ export function GoalCard({ goal }: { goal: GoalWithProgress }) {
         )}
         <div className="flex gap-1">
           <GoalFormDialog
+            key={`${goal.id}:${goal.updatedAt.toISOString()}`}
             goal={goal}
             trigger={
               <button className="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground">

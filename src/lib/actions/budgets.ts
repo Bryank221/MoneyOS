@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth/session";
 import { majorToMinor } from "@/lib/money";
 import * as budgetsData from "@/lib/data/budgets";
+import { categoryIdsAccessibleToUser } from "@/lib/data/categories";
 import type { ActionState } from "@/lib/actions/types";
 export type { ActionState } from "@/lib/actions/types";
 
@@ -27,6 +28,10 @@ export async function upsertBudgetAction(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+  }
+
+  if (!(await categoryIdsAccessibleToUser(user.id, [parsed.data.categoryId]))) {
+    return { error: "That category doesn't exist." };
   }
 
   await budgetsData.upsertBudget(user.id, {

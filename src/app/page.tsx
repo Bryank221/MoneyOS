@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Wallet } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -29,8 +29,12 @@ export default async function HomePage() {
         </p>
       </div>
       <div className="flex items-center gap-3">
-        <Button size="lg" render={<Link href="/signup">Get started</Link>} />
-        <Button variant="outline" size="lg" render={<Link href="/login">Log in</Link>} />
+        <Link href="/signup" className={buttonVariants({ size: "lg" })}>
+          Get started
+        </Link>
+        <Link href="/login" className={buttonVariants({ variant: "outline", size: "lg" })}>
+          Log in
+        </Link>
       </div>
     </main>
   );

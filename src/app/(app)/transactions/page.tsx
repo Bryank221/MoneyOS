@@ -1,11 +1,12 @@
-import { Plus, ArrowLeftRight } from "lucide-react";
+import Link from "next/link";
+import { Plus, ArrowLeftRight, Sparkles } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
 import { listTransactions } from "@/lib/data/transactions";
 import { listAccounts } from "@/lib/data/accounts";
 import { listCategories } from "@/lib/data/categories";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TransactionFormDialog } from "@/components/transactions/transaction-form-dialog";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
@@ -40,16 +41,25 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
         description="Every income, expense and transfer in one place."
         action={
           accounts.length > 0 ? (
-            <TransactionFormDialog
-              accounts={accounts}
-              categories={categories}
-              trigger={
-                <Button>
-                  <Plus className="size-4" />
-                  Add transaction
-                </Button>
-              }
-            />
+            <div className="flex gap-2">
+              <Link
+                href="/transactions/import"
+                className={buttonVariants({ variant: "outline" })}
+              >
+                <Sparkles className="size-4" />
+                Import with AI
+              </Link>
+              <TransactionFormDialog
+                accounts={accounts}
+                categories={categories}
+                trigger={
+                  <Button>
+                    <Plus className="size-4" />
+                    Add transaction
+                  </Button>
+                }
+              />
+            </div>
           ) : null
         }
       />
@@ -59,7 +69,11 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
           icon={ArrowLeftRight}
           title="Add an account first"
           description="You need at least one account before you can log a transaction."
-          action={<Button render={<a href="/accounts">Go to accounts</a>} />}
+          action={
+            <Link href="/accounts" className={buttonVariants()}>
+              Go to accounts
+            </Link>
+          }
         />
       ) : (
         <div className="space-y-4">

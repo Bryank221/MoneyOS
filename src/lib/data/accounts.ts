@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { accounts, transactions } from "@/db/schema";
 import {
@@ -14,6 +14,25 @@ export async function listAccounts(userId: string): Promise<Account[]> {
     where: eq(accounts.userId, userId),
     orderBy: (a, { asc }) => [asc(a.createdAt)],
   });
+}
+
+/**
+ * True only if every id in `accountIds` is one of this user's own accounts.
+ * Since the app's Postgres connection has BYPASSRLS (see README), this is
+ * the actual isolation boundary against a crafted request naming another
+ * user's account id, not just belt-and-suspenders.
+ */
+export async function accountIdsBelongToUser(
+  userId: string,
+  accountIds: string[],
+): Promise<boolean> {
+  const uniqueIds = Array.from(new Set(accountIds));
+  if (uniqueIds.length === 0) return true;
+  const owned = await db.query.accounts.findMany({
+    where: and(eq(accounts.userId, userId), inArray(accounts.id, uniqueIds)),
+    columns: { id: true },
+  });
+  return owned.length === uniqueIds.length;
 }
 
 export async function getAccount(
