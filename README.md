@@ -79,9 +79,15 @@ adding accounts.
   progress, spending by category) are pure, deterministic functions in
   `src/lib/finance/calculations.ts`, independent of the UI and covered by
   unit tests in `src/lib/finance/calculations.test.ts`.
-- **Data access** (`src/lib/data/*.ts`) always scopes queries by
-  `userId`; Supabase RLS policies (`supabase/migrations/0001_*.sql`) provide
-  a second layer of isolation at the database level.
+- **Data access** (`src/lib/data/*.ts`) always scopes queries by `userId` —
+  this is the primary tenant-isolation boundary. The RLS policies in
+  `supabase/migrations/0001_*.sql` protect any access path that goes through
+  Supabase's Data API (PostgREST) with a user's JWT, but they do **not**
+  apply to this app's own Drizzle queries if `DATABASE_URL` uses Supabase's
+  default `postgres` connection, because that role has `BYPASSRLS`. If you
+  want RLS to also backstop the app layer, point `DATABASE_URL` at a
+  dedicated Postgres role (no `BYPASSRLS`) with `SELECT/INSERT/UPDATE/DELETE`
+  granted only on the app's tables.
 - **Mutations** are Next.js Server Actions in `src/lib/actions/*.ts`,
   validated with Zod.
 - Transfers move money between two accounts and are excluded from income/

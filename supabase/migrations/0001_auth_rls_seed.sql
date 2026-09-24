@@ -63,7 +63,13 @@ BEGIN
   VALUES (NEW.id, NEW.raw_user_meta_data->>'display_name', 'MYR');
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
+
+-- This function is only meant to run as the auth.users trigger below (it
+-- references the trigger-only NEW record and will fail if called directly),
+-- but it's SECURITY DEFINER in an exposed schema, so Postgres's default
+-- PUBLIC execute grant is revoked as defense in depth.
+REVOKE EXECUTE ON FUNCTION handle_new_user() FROM PUBLIC, anon, authenticated;
 
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
@@ -81,70 +87,78 @@ ALTER TABLE goal_contributions ENABLE ROW LEVEL SECURITY;
 
 -- profiles: a user can read/update only their own row
 CREATE POLICY "profiles_select_own" ON profiles
-  FOR SELECT USING (auth.uid() = id);
+  FOR SELECT TO authenticated USING ((select auth.uid()) = id);
 CREATE POLICY "profiles_update_own" ON profiles
-  FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+  FOR UPDATE TO authenticated
+  USING ((select auth.uid()) = id) WITH CHECK ((select auth.uid()) = id);
 
 -- accounts: full CRUD scoped to owner
 CREATE POLICY "accounts_select_own" ON accounts
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT TO authenticated USING ((select auth.uid()) = user_id);
 CREATE POLICY "accounts_insert_own" ON accounts
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT TO authenticated WITH CHECK ((select auth.uid()) = user_id);
 CREATE POLICY "accounts_update_own" ON accounts
-  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+  FOR UPDATE TO authenticated
+  USING ((select auth.uid()) = user_id) WITH CHECK ((select auth.uid()) = user_id);
 CREATE POLICY "accounts_delete_own" ON accounts
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE TO authenticated USING ((select auth.uid()) = user_id);
 
 -- categories: users see default (user_id IS NULL) categories plus their own;
 -- they may only insert/update/delete their own custom categories.
 CREATE POLICY "categories_select_own_or_default" ON categories
-  FOR SELECT USING (auth.uid() = user_id OR user_id IS NULL);
+  FOR SELECT TO authenticated
+  USING ((select auth.uid()) = user_id OR user_id IS NULL);
 CREATE POLICY "categories_insert_own" ON categories
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT TO authenticated WITH CHECK ((select auth.uid()) = user_id);
 CREATE POLICY "categories_update_own" ON categories
-  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+  FOR UPDATE TO authenticated
+  USING ((select auth.uid()) = user_id) WITH CHECK ((select auth.uid()) = user_id);
 CREATE POLICY "categories_delete_own" ON categories
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE TO authenticated USING ((select auth.uid()) = user_id);
 
 -- transactions: full CRUD scoped to owner
 CREATE POLICY "transactions_select_own" ON transactions
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT TO authenticated USING ((select auth.uid()) = user_id);
 CREATE POLICY "transactions_insert_own" ON transactions
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT TO authenticated WITH CHECK ((select auth.uid()) = user_id);
 CREATE POLICY "transactions_update_own" ON transactions
-  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+  FOR UPDATE TO authenticated
+  USING ((select auth.uid()) = user_id) WITH CHECK ((select auth.uid()) = user_id);
 CREATE POLICY "transactions_delete_own" ON transactions
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE TO authenticated USING ((select auth.uid()) = user_id);
 
 -- budgets: full CRUD scoped to owner
 CREATE POLICY "budgets_select_own" ON budgets
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT TO authenticated USING ((select auth.uid()) = user_id);
 CREATE POLICY "budgets_insert_own" ON budgets
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT TO authenticated WITH CHECK ((select auth.uid()) = user_id);
 CREATE POLICY "budgets_update_own" ON budgets
-  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+  FOR UPDATE TO authenticated
+  USING ((select auth.uid()) = user_id) WITH CHECK ((select auth.uid()) = user_id);
 CREATE POLICY "budgets_delete_own" ON budgets
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE TO authenticated USING ((select auth.uid()) = user_id);
 
 -- goals: full CRUD scoped to owner
 CREATE POLICY "goals_select_own" ON goals
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT TO authenticated USING ((select auth.uid()) = user_id);
 CREATE POLICY "goals_insert_own" ON goals
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT TO authenticated WITH CHECK ((select auth.uid()) = user_id);
 CREATE POLICY "goals_update_own" ON goals
-  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+  FOR UPDATE TO authenticated
+  USING ((select auth.uid()) = user_id) WITH CHECK ((select auth.uid()) = user_id);
 CREATE POLICY "goals_delete_own" ON goals
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE TO authenticated USING ((select auth.uid()) = user_id);
 
 -- goal_contributions: full CRUD scoped to owner
 CREATE POLICY "goal_contributions_select_own" ON goal_contributions
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT TO authenticated USING ((select auth.uid()) = user_id);
 CREATE POLICY "goal_contributions_insert_own" ON goal_contributions
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT TO authenticated WITH CHECK ((select auth.uid()) = user_id);
 CREATE POLICY "goal_contributions_update_own" ON goal_contributions
-  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+  FOR UPDATE TO authenticated
+  USING ((select auth.uid()) = user_id) WITH CHECK ((select auth.uid()) = user_id);
 CREATE POLICY "goal_contributions_delete_own" ON goal_contributions
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE TO authenticated USING ((select auth.uid()) = user_id);
 
 -- 5. Default (system) categories --------------------------------------------------
 
